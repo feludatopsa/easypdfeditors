@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Editor - Split PDF</title>
+
+    <!-- Include PDF.js for rendering the PDF file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <!-- Include PDF-lib for PDF manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+    <style>
+        /* Same styling as the previous page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            margin-bottom: 30px;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 250px;
+        }
+        .merge-btn {
+            background-color: #ff6161;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .merge-btn:disabled {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Split PDF Files</h1>
+    <p>Select a PDF to split into individual pages.</p>
+
+    <div class="upload-area">
+        <input type="file" id="fileInput" accept=".pdf">
+        <button class="merge-btn" id="splitBtn" disabled>Split PDF</button>
+    </div>
+
+    <div class="file-list" id="fileList"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const splitBtn = document.getElementById('splitBtn');
+            let files = [];
+
+            // Handle file input change (PDF selection)
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+
+            // Handle file selection and render preview
+            function handleFiles(selectedFiles) {
+                const pdfFiles = Array.from(selectedFiles).filter(file => file.type === 'application/pdf');
+                
+                if (pdfFiles.length === 0) {
+                    alert('Please select a PDF file.');
+                    return;
+                }
+
+                // Add the files to the list and enable the split button
+                files = pdfFiles;
+                updateFileList();
+            }
+
+            // Update the file list and show file name
+            function updateFileList() {
+                fileList.innerHTML = ''; // Clear the file list
+                if (files.length === 0) {
+                    splitBtn.disabled = true;
+                    return;
+                }
+
+                files.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span>${file.name}</span>
+                        <span class="file-remove" data-index="${index}">✕</span>
+                    `;
+                    fileList.appendChild(fileItem);
+
+                    // Add event listener for file removal
+                    const removeBtn = fileItem.querySelector('.file-remove');
+                    removeBtn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        files.splice(index, 1);
+                        updateFileList();
+                    });
+                });
+
+                splitBtn.disabled = files.length === 0;
+            }
+
+            // Split PDFs when the button is clicked
+            splitBtn.addEventListener('click', async function() {
+                if (files.length === 0) {
+                    alert('No PDF file selected.');
+                    return;
+                }
+
+                const file = files[0]; // We only support one PDF file for splitting
+                await splitPDF(file);
+            });
+
+            // Function to split the PDF
+            async function splitPDF(file) {
+                const pdfBytes = await file.arrayBuffer();
+                const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+
+                const totalPages = pdfDoc.getPages().length;
+                const splitFiles = [];
+
+                for (let i = 0; i < totalPages; i++) {
+                    const newPdf = await PDFLib.PDFDocument.create();
+                    const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+                    newPdf.addPage(copiedPage);
+
+                    const pdfBytes = await newPdf.save();
+                    splitFiles.push(pdfBytes);
+                }
+
+                // Create download links for each split PDF
+                splitFiles.forEach((pdfBytes, index) => {
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `page_${index + 1}.pdf`;
+                    link.textContent = `Download Page ${index + 1}`;
+                    document.body.appendChild(link);
+                    document.body.appendChild(document.createElement('br'));
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

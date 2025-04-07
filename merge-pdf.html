@@ -5,83 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EASYPDFEDITORS - Merge PDF</title>
 
-    <!-- Include the PDF.js Library from CDN -->
+    <!-- Include the PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
-    <!-- Internal CSS -->
     <style>
-        /* ... existing styles ... */
-
+        /* Custom styles for thumbnails and file list */
         .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
             border-radius: 8px;
-            background: var(--sidebar-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            width: 220px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 250px;
         }
 
         .file-info {
+            display: flex;
+            align-items: center;
             flex-grow: 1;
+            margin-left: 10px;
+        }
+
+        .file-thumbnail {
+            width: 50px;
+            height: 70px;
+            margin-right: 10px;
+            border-radius: 4px;
+            background-color: #ddd;
+        }
+
+        .file-name {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         .file-remove {
+            color: red;
             cursor: pointer;
-            color: var(--primary-color);
             font-size: 18px;
         }
 
-        /* Style for the PDF thumbnail */
-        .pdf-thumbnail {
-            width: 50px;
-            height: 70px;
-            margin-right: 10px;
+        /* Action button styling */
+        .merge-btn {
+            background-color: #ff6161;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
         }
 
-        /* Styling the file list and layout */
+        .merge-btn:disabled {
+            background-color: #ccc;
+        }
+
+        /* Styling the file list */
         .file-list {
-            margin-top: 30px;
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+            justify-content: flex-start;
+            margin-top: 20px;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 4px;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header and other content here -->
-    
     <div class="container">
         <h2>Merge PDF Files</h2>
-        <p>Combine multiple PDFs into one document.</p>
+        <p>Select PDF files to merge.</p>
 
+        <!-- Upload Area -->
         <div class="upload-area">
-            <label for="fileInput" class="upload-btn">Select PDF Files</label>
-            <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
-            <p class="upload-text">or drag and drop your PDFs here.</p>
+            <input type="file" id="fileInput" accept=".pdf" multiple>
+            <button class="merge-btn" id="mergeBtn" disabled>Merge PDFs</button>
         </div>
 
-        <div class="file-list" id="fileList">
-            <!-- Uploaded files will be listed here -->
-        </div>
+        <!-- File List for displaying uploaded PDFs -->
+        <div class="file-list" id="fileList"></div>
 
-        <button class="merge-btn" id="mergeBtn" disabled>Merge PDFs</button>
-
+        <!-- Status Message -->
         <div class="status-message" id="statusMessage"></div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2023 EASYPDFEDITORS. All rights reserved.</p>
-    </footer>
-
-    <!-- Internal JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('fileInput');
@@ -90,33 +110,28 @@
             const statusMessage = document.getElementById('statusMessage');
             let files = [];
 
-            // Handle file selection
+            // Handle file input change (PDF selection)
             fileInput.addEventListener('change', function(e) {
                 handleFiles(e.target.files);
             });
 
-            // Handle file drop event
-            fileInput.addEventListener('dragover', (e) => e.preventDefault());
-            fileInput.addEventListener('drop', (e) => {
-                e.preventDefault();
-                handleFiles(e.dataTransfer.files);
-            });
-
+            // Handle files (preview thumbnails and add to list)
             function handleFiles(selectedFiles) {
                 const pdfFiles = Array.from(selectedFiles).filter(file => file.type === 'application/pdf');
 
                 if (pdfFiles.length === 0) {
-                    showStatus('Please select PDF files only', 'error');
+                    showStatus('Please select PDF files only.', 'error');
                     return;
                 }
 
+                // Add the files to the list and render thumbnails
                 files = files.concat(pdfFiles);
                 updateFileList();
             }
 
+            // Update the file list and render thumbnails
             function updateFileList() {
-                fileList.innerHTML = '';
-
+                fileList.innerHTML = ''; // Clear the file list
                 if (files.length === 0) {
                     mergeBtn.disabled = true;
                     return;
@@ -126,43 +141,78 @@
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
 
+                    // Create file thumbnail
                     const thumbnailContainer = document.createElement('div');
-                    thumbnailContainer.className = 'pdf-thumbnail';
-
-                    // Render the first page of the PDF as a thumbnail
+                    thumbnailContainer.className = 'file-thumbnail';
                     renderPDFThumbnail(file, thumbnailContainer);
 
+                    // Create the file item
                     fileItem.innerHTML = `
-                        <div class="file-info">${file.name}</div>
+                        <div class="file-info">
+                            ${thumbnailContainer.outerHTML}
+                            <span class="file-name" title="${file.name}">${file.name}</span>
+                        </div>
                         <span class="file-remove" data-index="${index}">✕</span>
                     `;
 
-                    fileItem.prepend(thumbnailContainer);
                     fileList.appendChild(fileItem);
-                });
 
-                mergeBtn.disabled = files.length < 2;
-
-                // Add remove functionality
-                document.querySelectorAll('.file-remove').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    // Add event listener for removing files
+                    const removeBtn = fileItem.querySelector('.file-remove');
+                    removeBtn.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
                         files.splice(index, 1);
                         updateFileList();
                     });
                 });
+
+                // Enable the merge button if there are at least two files
+                mergeBtn.disabled = files.length < 2;
             }
 
+            // Show status message (success or error)
             function showStatus(message, type) {
                 statusMessage.textContent = message;
                 statusMessage.className = `status-message ${type}`;
                 statusMessage.style.display = 'block';
-                setTimeout(() => statusMessage.style.display = 'none', 3000);
+                setTimeout(() => statusMessage.style.display = 'none', 5000);
             }
 
+            // Function to render the first page of the PDF as a thumbnail
+            function renderPDFThumbnail(file, container) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const loadingTask = pdfjsLib.getDocument(e.target.result);
+                    loadingTask.promise.then(function(pdf) {
+                        pdf.getPage(1).then(function(page) {
+                            const scale = 0.2; // Scale down to make the thumbnail smaller
+                            const viewport = page.getViewport({ scale: scale });
+
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            page.render({
+                                canvasContext: context,
+                                viewport: viewport
+                            }).promise.then(function() {
+                                // Once rendered, set the thumbnail image source
+                                container.innerHTML = ''; // Clear any previous content
+                                container.appendChild(canvas);
+                            });
+                        });
+                    }).catch(function(error) {
+                        console.error('Error loading PDF: ', error);
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            // Merge PDFs when the button is clicked
             mergeBtn.addEventListener('click', async function() {
                 if (files.length < 2) {
-                    showStatus('Please select at least 2 PDFs to merge', 'error');
+                    showStatus('Please select at least 2 PDFs to merge.', 'error');
                     return;
                 }
 
@@ -189,35 +239,6 @@
                     mergeBtn.disabled = false;
                 }
             });
-
-            // Function to render the first page of the PDF as a thumbnail
-            function renderPDFThumbnail(file, container) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const loadingTask = pdfjsLib.getDocument(e.target.result);
-                    loadingTask.promise.then(function(pdf) {
-                        // Get the first page of the PDF
-                        pdf.getPage(1).then(function(page) {
-                            const scale = 0.2; // Scale down to make the thumbnail smaller
-                            const viewport = page.getViewport({ scale: scale });
-
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-
-                            page.render({
-                                canvasContext: context,
-                                viewport: viewport
-                            }).promise.then(function() {
-                                // Once rendered, set the thumbnail image source
-                                container.appendChild(canvas);
-                            });
-                        });
-                    });
-                };
-                reader.readAsArrayBuffer(file);
-            }
 
             // Function to merge PDFs using PDF-lib
             async function mergePDFs(files) {

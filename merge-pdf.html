@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merge PDF | EASYPDFEDITORS</title>
+    <title>EASYPDFEDITORS - Merge PDF</title>
 
     <!-- Include the PDF-lib Library from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
@@ -51,6 +51,34 @@
             margin: 0 auto;
         }
 
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h1 {
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            display: flex;
+            gap: 20px;
+            list-style-type: none;
+        }
+
+        nav ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 15px;
+        }
+
+        nav ul li a:hover {
+            background-color: var(--primary-light);
+            border-radius: 4px;
+        }
+
         .upload-area {
             border: 2px dashed #ccc;
             border-radius: 8px;
@@ -72,10 +100,6 @@
 
         .upload-btn:hover {
             background-color: var(--primary-dark);
-        }
-
-        .upload-text {
-            margin: 20px 0;
         }
 
         .file-list {
@@ -165,7 +189,14 @@
     <!-- Header -->
     <header>
         <div class="container">
-            <h1>EASYPDFEDITORS</h1>
+            <nav>
+                <h1>EASYPDFEDITORS</h1>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 

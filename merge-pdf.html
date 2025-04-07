@@ -5,110 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EASYPDFEDITORS - Merge PDF</title>
 
-    <!-- Include the PDF-lib Library from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+    <!-- Include the PDF.js Library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
     <!-- Internal CSS -->
     <style>
-        :root {
-            --primary-color: #ff6161;
-            --primary-dark: #e04a4a;
-            --dark-color: #333;
-            --light-color: #f8f8f8;
-            --sidebar-bg: #fafafa;
-            --text-color: #333;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #fff;
-            color: var(--dark-color);
-            line-height: 1.6;
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 15px 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav h1 {
-            color: var(--primary-color);
-        }
-
-        nav ul {
-            display: flex;
-            gap: 20px;
-            list-style-type: none;
-        }
-
-        nav ul li a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 15px;
-        }
-
-        nav ul li a:hover {
-            background-color: var(--primary-light);
-            border-radius: 4px;
-        }
-
-        .upload-area {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 40px;
-            margin-top: 100px;
-            background-color: var(--light-color);
-            text-align: center;
-        }
-
-        .upload-btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            margin-top: 20px;
-        }
-
-        .upload-btn:hover {
-            background-color: var(--primary-dark);
-        }
-
-        .file-list {
-            margin-top: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
+        /* ... existing styles ... */
 
         .file-item {
             display: flex;
@@ -134,93 +36,45 @@
             font-size: 18px;
         }
 
-        .merge-btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            margin-top: 20px;
+        /* Style for the PDF thumbnail */
+        .pdf-thumbnail {
+            width: 50px;
+            height: 70px;
+            margin-right: 10px;
         }
 
-        .merge-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .status-message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .status-message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        footer {
-            background-color: #2a2a2a;
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-            margin-top: auto;
-        }
-
-        @media (max-width: 768px) {
-            .file-item {
-                width: 100%;
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        /* Styling the file list and layout */
+        .file-list {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <nav>
-                <h1>EASYPDFEDITORS</h1>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-            </nav>
+    <!-- Header and other content here -->
+    
+    <div class="container">
+        <h2>Merge PDF Files</h2>
+        <p>Combine multiple PDFs into one document.</p>
+
+        <div class="upload-area">
+            <label for="fileInput" class="upload-btn">Select PDF Files</label>
+            <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
+            <p class="upload-text">or drag and drop your PDFs here.</p>
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main>
-        <div class="container">
-            <h2>Merge PDF Files</h2>
-            <p>Combine multiple PDFs into one document.</p>
-
-            <div class="upload-area">
-                <label for="fileInput" class="upload-btn">Select PDF Files</label>
-                <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
-                <p class="upload-text">or drag and drop your PDFs here.</p>
-            </div>
-
-            <div class="file-list" id="fileList">
-                <!-- Uploaded files will be listed here -->
-            </div>
-
-            <button class="merge-btn" id="mergeBtn" disabled>Merge PDFs</button>
-
-            <div class="status-message" id="statusMessage"></div>
+        <div class="file-list" id="fileList">
+            <!-- Uploaded files will be listed here -->
         </div>
-    </main>
+
+        <button class="merge-btn" id="mergeBtn" disabled>Merge PDFs</button>
+
+        <div class="status-message" id="statusMessage"></div>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -271,10 +125,19 @@
                 files.forEach((file, index) => {
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
+
+                    const thumbnailContainer = document.createElement('div');
+                    thumbnailContainer.className = 'pdf-thumbnail';
+
+                    // Render the first page of the PDF as a thumbnail
+                    renderPDFThumbnail(file, thumbnailContainer);
+
                     fileItem.innerHTML = `
                         <div class="file-info">${file.name}</div>
                         <span class="file-remove" data-index="${index}">✕</span>
                     `;
+
+                    fileItem.prepend(thumbnailContainer);
                     fileList.appendChild(fileItem);
                 });
 
@@ -326,6 +189,35 @@
                     mergeBtn.disabled = false;
                 }
             });
+
+            // Function to render the first page of the PDF as a thumbnail
+            function renderPDFThumbnail(file, container) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const loadingTask = pdfjsLib.getDocument(e.target.result);
+                    loadingTask.promise.then(function(pdf) {
+                        // Get the first page of the PDF
+                        pdf.getPage(1).then(function(page) {
+                            const scale = 0.2; // Scale down to make the thumbnail smaller
+                            const viewport = page.getViewport({ scale: scale });
+
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            page.render({
+                                canvasContext: context,
+                                viewport: viewport
+                            }).promise.then(function() {
+                                // Once rendered, set the thumbnail image source
+                                container.appendChild(canvas);
+                            });
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
 
             // Function to merge PDFs using PDF-lib
             async function mergePDFs(files) {

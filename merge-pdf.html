@@ -75,6 +75,9 @@
             text-align: center;
         }
     </style>
+
+    <!-- Add PDF-lib from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body>
 
@@ -168,15 +171,61 @@
             }
 
             // Merge button functionality
-            mergeBtn.addEventListener('click', function() {
+            mergeBtn.addEventListener('click', async function() {
                 if (files.length < 2) {
                     alert('Please select at least 2 PDF files to merge');
                     return;
                 }
 
-                alert('Merging PDFs...');
-                // Merge PDFs logic here (using a library like PDF-lib or integrating with an API)
+                // Disable the button and show merging status
+                mergeBtn.disabled = true;
+                mergeBtn.textContent = 'Merging...';
+
+                try {
+                    const mergedPdf = await mergePDFs(files);
+                    // Create a blob from the merged PDF and trigger download
+                    const mergedPdfBlob = new Blob([mergedPdf], { type: 'application/pdf' });
+                    const mergedPdfUrl = URL.createObjectURL(mergedPdfBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = mergedPdfUrl;
+                    downloadLink.download = 'merged.pdf';
+                    downloadLink.click();
+                    mergeBtn.textContent = 'Merge PDFs';
+                } catch (error) {
+                    alert('Error merging PDFs: ' + error);
+                    mergeBtn.textContent = 'Merge PDFs';
+                } finally {
+                    mergeBtn.disabled = false;
+                }
             });
+
+            // Function to merge PDFs using PDF-lib
+            async function mergePDFs(files) {
+                const pdfDocs = await Promise.all(
+                    files.map(file => readPDF(file))
+                );
+
+                // Create a new PDF document to merge all pages
+                const mergedPdf = await PDFLib.PDFDocument.create();
+
+                // Add pages from each document to the new one
+                for (const pdfDoc of pdfDocs) {
+                    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPages().map((_, i) => i));
+                    copiedPages.forEach(page => {
+                        mergedPdf.addPage(page);
+                    });
+                }
+
+                // Serialize the merged document to bytes
+                const mergedPdfBytes = await mergedPdf.save();
+                return mergedPdfBytes;
+            }
+
+            // Function to read a PDF file
+            async function readPDF(file) {
+                const arrayBuffer = await file.arrayBuffer();
+                return await PDFLib.PDFDocument.load(arrayBuffer);
+            }
         });
     </script>
 

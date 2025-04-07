@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EASYPDFEDITORS - Merge PDF</title>
 
-    <!-- Include the PDF.js Library -->
+    <!-- Include PDF.js Library (for rendering thumbnails) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
+    <!-- Include PDF-lib Library (for merging PDFs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
     <style>
-        /* Custom styles for thumbnails and file list */
+        /* Styling for file list and thumbnails */
         .file-item {
             display: flex;
             justify-content: space-between;
@@ -33,7 +36,6 @@
             width: 50px;
             height: 70px;
             margin-right: 10px;
-            border-radius: 4px;
             background-color: #ddd;
         }
 

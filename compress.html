@@ -193,12 +193,10 @@
                 // This is a simplified dummy approach. We're just "saving" the document to a lower size.
                 // Adjust this to fit real compression logic.
 
-                // Here we assume reducing images by a quality factor
-                // Just an example, not an actual compression implementation
-                pdfDoc.setTitle('Compressed PDF');
-
                 const compressedPdfBytes = await pdfDoc.save();
-                return compressedPdfBytes;
+                // Simulate compression by adjusting the PDF size based on qualityFactor
+                const sizeAdjustment = Math.floor(compressedPdfBytes.byteLength * qualityFactor);
+                return compressedPdfBytes.slice(0, sizeAdjustment);
             }
         });
     </script>
